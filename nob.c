@@ -6,47 +6,89 @@
 
 #define INCLUDE_FOLDER "./include/"
 #define LIB_FOLDER "./lib/"
+#define LIB_WIN_FOLDER "./lib-win"
 #define BUILD_FOLDER "./build/"
 #define SRC_FOLDER "./src/"
-#define NINJA_EXE BUILD_FOLDER"ninja"
+#define NINJA_EXE BUILD_FOLDER "ninja"
 
 Nob_Cmd cmd = {0};
 
 bool run = false;
+bool windows = false;
+
+void set_compiler() {
+    if (windows) {
+        cmd_append(&cmd, "x86_64-w64-mingw32-gcc");
+    } else {
+        cmd_append(&cmd, "gcc");
+    }
+}
+
+void set_libs() {
+    if (windows) {
+        cmd_append(&cmd, "-L" LIB_WIN_FOLDER);
+    } else {
+        cmd_append(&cmd, "-L" LIB_FOLDER);
+    }
+}
+
+void windows_stuff() {
+    if (windows) {
+        cmd_append(&cmd, "-lopengl32", "-lgdi32", "-lwinmm");
+    }
+}
 
 int main(int argc, char **argv) {
     NOB_GO_REBUILD_URSELF(argc, argv);
-    
+
     const char *program_name = shift(argv, argc);
 
     while (argc > 0) {
         const char *flag = shift(argv, argc);
-        if (strcmp(flag, "-r") == 0) { 
-            run = true; 
-            continue; 
+        if (strcmp(flag, "-r") == 0) {
+            run = true;
+            continue;
         }
-        if (strcmp(flag, "--") == 0) break;
-        fprintf(stderr, "%s:%d: ERROR: unknown flag `%s`\n", __FILE__, __LINE__, flag);
+        if (strcmp(flag, "-win") == 0) {
+            windows = true;
+            continue;
+        }
+        if (strcmp(flag, "--") == 0)
+            break;
+        fprintf(stderr, "%s:%d: ERROR: unknown flag `%s`\n", __FILE__, __LINE__,
+                flag);
         if (run) {
-            fprintf(stderr, "NOTE: use -- to separate %s and %s command line arguments\n", program_name, NINJA_EXE);
+            fprintf(
+                stderr,
+                "NOTE: use -- to separate %s and %s command line arguments\n",
+                program_name, NINJA_EXE);
         }
         return 1;
     }
 
-    if (!mkdir_if_not_exists(BUILD_FOLDER)) return 1;
+    if (!mkdir_if_not_exists(BUILD_FOLDER))
+        return 1;
 
-    cmd_append(&cmd, "cc");
-    cmd_append(&cmd, "-o"NINJA_EXE);
-    cmd_append(&cmd, SRC_FOLDER"main.c");
-    cmd_append(&cmd, "-L"LIB_FOLDER);
+    set_compiler();
+    cmd_append(&cmd, "-o" NINJA_EXE);
+    cmd_append(&cmd, SRC_FOLDER "main.c");
+    set_libs();
     cmd_append(&cmd, "-l:libraylib.a");
     cmd_append(&cmd, "-lm");
-    if (!cmd_run(&cmd)) return 1;
+    windows_stuff();
+
+    if (!cmd_run(&cmd))
+        return 1;
 
     if (run) {
+        if (windows) {
+            cmd_append(&cmd, "wine");
+        }
+
         cmd_append(&cmd, NINJA_EXE);
         da_append_many(&cmd, argv, argc);
-        if (!cmd_run(&cmd)) return 1;
+        if (!cmd_run(&cmd))
+            return 1;
     }
 
     return 0;
