@@ -1,0 +1,5 @@
+.cache/
+.clang-format
+assets/
+build/
+nob
