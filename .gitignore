@@ -1,5 +1,5 @@
 .cache/
 .clang-format
-assets/
+assets_og/
 build/
 nob
