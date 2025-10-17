@@ -1,9 +1,9 @@
-#include "../include/raylib.h"
+#include "include/raylib.h"
 
 const int VIRTUAL_WIDTH = 640;
 const int VIRTUAL_HEIGHT = 480;
 
-int main(int argc, char **argv) {
+int main(void) {
     const int initialScreenWidth = 800;
     const int initialScreenHeight = 600;
     InitWindow(initialScreenWidth, initialScreenHeight, "ninjagame");

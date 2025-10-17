@@ -4,7 +4,6 @@
 
 #include "./nob.h"
 
-#define INCLUDE_FOLDER "./include/"
 #define LIB_FOLDER "./lib/"
 #define LIB_WIN_FOLDER "./lib-win"
 #define BUILD_FOLDER "./build/"
@@ -16,15 +15,15 @@ Nob_Cmd cmd = {0};
 bool run = false;
 bool windows = false;
 
-void set_compiler() {
+void set_compiler(void) {
     if (windows) {
         cmd_append(&cmd, "x86_64-w64-mingw32-gcc");
     } else {
-        cmd_append(&cmd, "gcc");
+        nob_cc(&cmd);
     }
 }
 
-void set_libs() {
+void set_lib_folder(void) {
     if (windows) {
         cmd_append(&cmd, "-L" LIB_WIN_FOLDER);
     } else {
@@ -32,7 +31,7 @@ void set_libs() {
     }
 }
 
-void windows_stuff() {
+void windows_stuff(void) {
     if (windows) {
         cmd_append(&cmd, "-lopengl32", "-lgdi32", "-lwinmm");
     }
@@ -70,9 +69,10 @@ int main(int argc, char **argv) {
         return 1;
 
     set_compiler();
-    cmd_append(&cmd, "-o" NINJA_EXE);
-    cmd_append(&cmd, SRC_FOLDER "main.c");
-    set_libs();
+    nob_cc_flags(&cmd);
+    nob_cc_output(&cmd, NINJA_EXE);
+    nob_cc_inputs(&cmd, SRC_FOLDER "main.c");
+    set_lib_folder();
     cmd_append(&cmd, "-l:libraylib.a");
     cmd_append(&cmd, "-lm");
     windows_stuff();
