@@ -1,0 +1,4 @@
+- assets: https://dafluffypotato.com/
+    - [Unmodified Originals](https://dafluffypotato.com/assets/pg_tutorial/00_resources.zip) 
+- nob.h: https://github.com/tsoding/nob.h
+- raylib: https://www.raylib.com/ 
