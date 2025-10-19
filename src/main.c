@@ -1,9 +1,5 @@
 #include "include/raylib.h"
 
-#if defined(PLATFORM_WEB)
-    #include <emscripten/emscripten.h>
-#endif
-
 #define VIRTUAL_WIDTH 320
 #define VIRTUAL_HEIGHT 240
 #define INITIAL_SCREEN_WIDTH 800
@@ -34,110 +30,14 @@ typedef struct {
     Texture2D wall_slide_tex;
 } Player;
 
-static RenderTexture2D target;
-static Player player;
-
-void update(void) {
-    // Window
-    if (IsKeyPressed(KEY_F11)) {
-        ToggleFullscreen();
-    }
-
-    int scaleX = GetRenderWidth() / VIRTUAL_WIDTH;
-    int scaleY = GetRenderHeight() / VIRTUAL_HEIGHT;
-    int scale = (scaleX < scaleY) ? scaleX : scaleY;
-    int offsetX = (GetRenderWidth() - VIRTUAL_WIDTH * scale) / 2;
-    int offsetY = (GetRenderHeight() - VIRTUAL_HEIGHT * scale) / 2;
-
-    if (IsKeyPressed(KEY_F1)) {
-        if (!IsWindowFullscreen()) {
-            SetWindowSize(VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale);
-        }
-    }
-
-    // Animation
-    if (IsKeyDown(KEY_RIGHT)) {
-        player.anim = RUN;
-    } else {
-        player.anim = IDLE;
-    }
-    if (player.anim != player.anim_last) {
-        player.anim_frame = 0;
-        player.anim_timer = 0.0;
-        player.anim_last = player.anim;
-    }
-    if (player.anim == IDLE || player.anim == RUN) {
-        player.anim_timer += GetFrameTime();
-        switch (player.anim) {
-        case IDLE:
-            if (player.anim_timer >= PLAYER_IDLE_ANIMATION_TIME) {
-                player.anim_timer = 0.0f;
-                player.anim_frame++;
-                player.anim_frame %= (player.idle_tex.width / PLAYER_WIDTH);
-            }
-            break;
-        case RUN:
-            if (player.anim_timer >= PLAYER_RUN_ANIMATION_TIME) {
-                player.anim_timer = 0.0f;
-                player.anim_frame++;
-                player.anim_frame %= (player.run_tex.width / PLAYER_WIDTH);
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    // Render
-    BeginTextureMode(target);
-    {
-        ClearBackground(DARKGRAY);
-        DrawText("Ninja Game", 100, 50, 20, RED);
-
-        switch (player.anim) {
-        case IDLE:
-            DrawTexturePro(player.idle_tex,
-                           (Rectangle){PLAYER_WIDTH * player.anim_frame, 0,
-                                       PLAYER_WIDTH, PLAYER_HEIGHT},
-                           (Rectangle){player.pos.x, player.pos.y,
-                                       PLAYER_WIDTH, PLAYER_HEIGHT},
-                           (Vector2){0, 0}, 0.0f, WHITE);
-            break;
-        case RUN:
-            DrawTexturePro(player.run_tex,
-                           (Rectangle){PLAYER_WIDTH * player.anim_frame, 0,
-                                       PLAYER_WIDTH, PLAYER_HEIGHT},
-                           (Rectangle){player.pos.x, player.pos.y,
-                                       PLAYER_WIDTH, PLAYER_HEIGHT},
-                           (Vector2){0, 0}, 0.0f, WHITE);
-            break;
-        default:
-            break;
-        }
-    }
-    EndTextureMode();
-
-    BeginDrawing();
-    {
-        ClearBackground(BLACK);
-        DrawTexturePro(
-            target.texture,
-            (Rectangle){0, 0, (float)VIRTUAL_WIDTH,
-                        (float)-VIRTUAL_HEIGHT}, // flip vertically
-            (Rectangle){offsetX, offsetY, VIRTUAL_WIDTH * scale,
-                        VIRTUAL_HEIGHT * scale},
-            (Vector2){0, 0}, 0.0f, WHITE);
-    }
-    EndDrawing();
-}
-
 int main(void) {
     InitWindow(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, "ninjagame");
     SetWindowMinSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+    SetWindowState(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 
-    target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+    RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
-    player = (Player){
+    Player player = (Player){
         .pos = (Vector2){.x = 100.0f, .y = 30.0f},
         .anim = IDLE,
         .anim_frame = 0,
@@ -150,15 +50,100 @@ int main(void) {
             LoadTexture("assets/images/entities/player/wall_slide.png"),
     };
 
-
-#if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(update, 0, 1);
-#else
-    SetWindowState(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     while (!WindowShouldClose()) {
-        update();
+        // Window
+        if (IsKeyPressed(KEY_F11)) {
+            ToggleFullscreen();
+        }
+
+        int scaleX = GetRenderWidth() / VIRTUAL_WIDTH;
+        int scaleY = GetRenderHeight() / VIRTUAL_HEIGHT;
+        int scale = (scaleX < scaleY) ? scaleX : scaleY;
+        int offsetX = (GetRenderWidth() - VIRTUAL_WIDTH * scale) / 2;
+        int offsetY = (GetRenderHeight() - VIRTUAL_HEIGHT * scale) / 2;
+
+        if (IsKeyPressed(KEY_F1)) {
+            if (!IsWindowFullscreen()) {
+                SetWindowSize(VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale);
+            }
+        }
+
+        // Animation
+        if (IsKeyDown(KEY_RIGHT)) {
+            player.anim = RUN;
+        } else {
+            player.anim = IDLE;
+        }
+        if (player.anim != player.anim_last) {
+            player.anim_frame = 0;
+            player.anim_timer = 0.0;
+            player.anim_last = player.anim;
+        }
+        if (player.anim == IDLE || player.anim == RUN) {
+            player.anim_timer += GetFrameTime();
+            switch (player.anim) {
+            case IDLE:
+                if (player.anim_timer >= PLAYER_IDLE_ANIMATION_TIME) {
+                    player.anim_timer = 0.0f;
+                    player.anim_frame++;
+                    player.anim_frame %= (player.idle_tex.width / PLAYER_WIDTH);
+                }
+                break;
+            case RUN:
+                if (player.anim_timer >= PLAYER_RUN_ANIMATION_TIME) {
+                    player.anim_timer = 0.0f;
+                    player.anim_frame++;
+                    player.anim_frame %= (player.run_tex.width / PLAYER_WIDTH);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+
+        // Render
+        BeginTextureMode(target);
+        {
+            ClearBackground(DARKGRAY);
+            DrawText("Ninja Game", 100, 50, 20, RED);
+
+            switch (player.anim) {
+            case IDLE:
+                DrawTexturePro(player.idle_tex,
+                               (Rectangle){PLAYER_WIDTH * player.anim_frame, 0,
+                                           PLAYER_WIDTH, PLAYER_HEIGHT},
+                               (Rectangle){player.pos.x, player.pos.y,
+                                           PLAYER_WIDTH, PLAYER_HEIGHT},
+                               (Vector2){0, 0}, 0.0f, WHITE);
+                break;
+            case RUN:
+                DrawTexturePro(player.run_tex,
+                               (Rectangle){PLAYER_WIDTH * player.anim_frame, 0,
+                                           PLAYER_WIDTH, PLAYER_HEIGHT},
+                               (Rectangle){player.pos.x, player.pos.y,
+                                           PLAYER_WIDTH, PLAYER_HEIGHT},
+                               (Vector2){0, 0}, 0.0f, WHITE);
+                break;
+            default:
+                break;
+            }
+        }
+        EndTextureMode();
+
+        BeginDrawing();
+        {
+            ClearBackground(BLACK);
+            DrawTexturePro(
+                target.texture,
+                (Rectangle){0, 0, (float)VIRTUAL_WIDTH,
+                            (float)-VIRTUAL_HEIGHT}, // flip vertically
+                (Rectangle){offsetX, offsetY, VIRTUAL_WIDTH * scale,
+                            VIRTUAL_HEIGHT * scale},
+                (Vector2){0, 0}, 0.0f, WHITE);
+        }
+        EndDrawing();
     }
-#endif
+
     CloseWindow();
     return 0;
 }
