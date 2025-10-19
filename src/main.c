@@ -9,6 +9,10 @@
 #define PLAYER_IDLE_ANIMATION_TIME 0.2f
 #define PLAYER_RUN_ANIMATION_TIME 0.1f
 
+#ifdef PLATFORM_WEB
+#include <emscripten/emscripten.h>
+#endif // PLATFORM_WEB
+
 enum player_animation {
     IDLE,
     RUN,
@@ -34,6 +38,12 @@ int main(void) {
     InitWindow(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, "ninjagame");
     SetWindowMinSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetWindowState(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+
+#ifdef PLATFORM_WEB
+    int width = EM_ASM_INT({ return window.innerWidth; });
+    int height = EM_ASM_INT({ return window.innerHeight; });
+    SetWindowSize(width, height);
+#endif // PLATFORM_WEB
 
     RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
