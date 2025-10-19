@@ -11,7 +11,7 @@
 
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
-#endif // PLATFORM_WEB
+#endif
 
 enum player_animation {
     IDLE,
@@ -40,14 +40,12 @@ int main(void) {
     SetWindowState(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 
 #ifdef PLATFORM_WEB
-    int width = EM_ASM_INT({ return window.innerWidth; });
-    int height = EM_ASM_INT({ return window.innerHeight; });
-    SetWindowSize(width, height);
-#endif // PLATFORM_WEB
+    SetWindowSize(EM_ASM_INT({ return window.innerWidth; }), EM_ASM_INT({ return window.innerHeight; }));
+#endif
 
     RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
-    Player player = (Player){
+    Player player = {
         .pos = (Vector2){.x = 100.0f, .y = 30.0f},
         .anim = IDLE,
         .anim_frame = 0,
@@ -56,8 +54,7 @@ int main(void) {
         .run_tex = LoadTexture("assets/run.png"),
         .jump_tex = LoadTexture("assets/jump.png"),
         .slide_tex = LoadTexture("assets/slide.png"),
-        .wall_slide_tex =
-            LoadTexture("assets/images/entities/player/wall_slide.png"),
+        .wall_slide_tex = LoadTexture("assets/wall_slide.png"),
     };
 
     while (!WindowShouldClose()) {
@@ -66,16 +63,15 @@ int main(void) {
             ToggleFullscreen();
         }
 
+        // Calculate integer scaling for clean pixel art
         int scaleX = GetRenderWidth() / VIRTUAL_WIDTH;
         int scaleY = GetRenderHeight() / VIRTUAL_HEIGHT;
         int scale = (scaleX < scaleY) ? scaleX : scaleY;
         int offsetX = (GetRenderWidth() - VIRTUAL_WIDTH * scale) / 2;
         int offsetY = (GetRenderHeight() - VIRTUAL_HEIGHT * scale) / 2;
 
-        if (IsKeyPressed(KEY_F1)) {
-            if (!IsWindowFullscreen()) {
-                SetWindowSize(VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale);
-            }
+        if (IsKeyPressed(KEY_F1) && !IsWindowFullscreen()) {
+            SetWindowSize(VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale);
         }
 
         // Animation
@@ -95,15 +91,13 @@ int main(void) {
             case IDLE:
                 if (player.anim_timer >= PLAYER_IDLE_ANIMATION_TIME) {
                     player.anim_timer = 0.0f;
-                    player.anim_frame++;
-                    player.anim_frame %= (player.idle_tex.width / PLAYER_WIDTH);
+                    player.anim_frame = (player.anim_frame + 1) % (player.idle_tex.width / PLAYER_WIDTH);
                 }
                 break;
             case RUN:
                 if (player.anim_timer >= PLAYER_RUN_ANIMATION_TIME) {
                     player.anim_timer = 0.0f;
-                    player.anim_frame++;
-                    player.anim_frame %= (player.run_tex.width / PLAYER_WIDTH);
+                    player.anim_frame = (player.anim_frame + 1) % (player.run_tex.width / PLAYER_WIDTH);
                 }
                 break;
             default:
@@ -117,22 +111,18 @@ int main(void) {
             ClearBackground(DARKGRAY);
             DrawText("Ninja Game", 100, 50, 20, RED);
 
+            // Draw player
+            Rectangle texture = {PLAYER_WIDTH * player.anim_frame, 0, PLAYER_WIDTH, PLAYER_HEIGHT};
+            Rectangle source = {player.pos.x, player.pos.y, PLAYER_WIDTH, PLAYER_HEIGHT};
+            Vector2 pos = {0, 0};
+            double rotation = 0.0;
+            Color colour = WHITE;
             switch (player.anim) {
             case IDLE:
-                DrawTexturePro(player.idle_tex,
-                               (Rectangle){PLAYER_WIDTH * player.anim_frame, 0,
-                                           PLAYER_WIDTH, PLAYER_HEIGHT},
-                               (Rectangle){player.pos.x, player.pos.y,
-                                           PLAYER_WIDTH, PLAYER_HEIGHT},
-                               (Vector2){0, 0}, 0.0f, WHITE);
+                DrawTexturePro(player.idle_tex, texture, source, pos, rotation, colour);
                 break;
             case RUN:
-                DrawTexturePro(player.run_tex,
-                               (Rectangle){PLAYER_WIDTH * player.anim_frame, 0,
-                                           PLAYER_WIDTH, PLAYER_HEIGHT},
-                               (Rectangle){player.pos.x, player.pos.y,
-                                           PLAYER_WIDTH, PLAYER_HEIGHT},
-                               (Vector2){0, 0}, 0.0f, WHITE);
+                DrawTexturePro(player.run_tex, texture, source, pos, rotation, colour);
                 break;
             default:
                 break;
@@ -143,13 +133,15 @@ int main(void) {
         BeginDrawing();
         {
             ClearBackground(BLACK);
+
+            // Render target scaled
             DrawTexturePro(
                 target.texture,
-                (Rectangle){0, 0, (float)VIRTUAL_WIDTH,
-                            (float)-VIRTUAL_HEIGHT}, // flip vertically
-                (Rectangle){offsetX, offsetY, VIRTUAL_WIDTH * scale,
-                            VIRTUAL_HEIGHT * scale},
-                (Vector2){0, 0}, 0.0f, WHITE);
+                (Rectangle){0, 0, (float)VIRTUAL_WIDTH, (float)-VIRTUAL_HEIGHT}, // flip vertically
+                (Rectangle){offsetX, offsetY, VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale},
+                (Vector2){0, 0}, 
+                0.0f, 
+                WHITE);
         }
         EndDrawing();
     }
