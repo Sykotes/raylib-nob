@@ -11,7 +11,7 @@
 #define BUILD_FOLDER_WEB "./build/web/"
 #define SRC_FOLDER "./src/"
 #define NINJA_EXE BUILD_FOLDER "ninja"
-#define NINJA_JS BUILD_FOLDER_WEB "ninja.js"
+#define NINJA_WEB BUILD_FOLDER_WEB "ninja.html"
 
 Nob_Cmd cmd = {0};
 
@@ -21,7 +21,7 @@ bool web = false;
 
 void set_output(void) {
     if (web) {
-        nob_cc_output(&cmd, NINJA_JS);
+        nob_cc_output(&cmd, NINJA_WEB);
     } else {
         nob_cc_output(&cmd, NINJA_EXE);
     }
@@ -56,12 +56,9 @@ void windows_stuff(void) {
 
 bool web_stuff(void) {
     if (web) {
-        if (!copy_file(LIB_WEB_FOLDER"shell.html", BUILD_FOLDER_WEB"index.html")) {
-            return false;
-        }
         cmd_append(&cmd, "-s", "USE_GLFW=3");
         cmd_append(&cmd, "-s", "ASYNCIFY");
-        cmd_append(&cmd, "--shell-file", BUILD_FOLDER_WEB"index.html");
+        cmd_append(&cmd, "--shell-file", LIB_WEB_FOLDER"shell.html");
         cmd_append(&cmd, "--preload-file", "assets");
         cmd_append(&cmd, "-DPLATFORM_WEB");
     }
@@ -131,7 +128,7 @@ int main(int argc, char **argv) {
     if (run) {
         if (web) {
             cmd_append(&cmd, "emrun");
-            cmd_append(&cmd, BUILD_FOLDER_WEB"index.html");
+            cmd_append(&cmd, NINJA_WEB);
         }
         else { 
             if (windows) {
