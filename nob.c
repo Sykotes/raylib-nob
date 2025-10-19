@@ -4,9 +4,9 @@
 
 #include "./nob.h"
 
-#define LIB_FOLDER "./lib/"
-#define LIB_WIN_FOLDER "./lib-win/"
-#define LIB_WEB_FOLDER "./lib-web/"
+#define LIB_LINUX_FOLDER "./lib/linux/"
+#define LIB_WINDOWS_FOLDER "./lib/windows/"
+#define LIB_WEB_FOLDER "./lib/web/"
 #define BUILD_FOLDER "./build/"
 #define BUILD_FOLDER_WEB "./build/web/"
 #define SRC_FOLDER "./src/"
@@ -39,12 +39,12 @@ void set_compiler(void) {
 
 void set_lib_folder(void) {
     if (windows) {
-        cmd_append(&cmd, "-L" LIB_WIN_FOLDER);
+        cmd_append(&cmd, "-L" LIB_WINDOWS_FOLDER);
     } else if (web) {
         cmd_append(&cmd, "-L" LIB_WEB_FOLDER);
     }
     else {
-        cmd_append(&cmd, "-L" LIB_FOLDER);
+        cmd_append(&cmd, "-L" LIB_LINUX_FOLDER);
     }
 }
 
