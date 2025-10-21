@@ -52,11 +52,11 @@ int main(void) {
     RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
 
-    Image idle_img = LoadImageFromMemory(".png", __assets_idle_png, __assets_idle_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
-    Image run_img = LoadImageFromMemory(".png", __assets_run_png, __assets_run_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
-    Image jump_img = LoadImageFromMemory(".png", __assets_jump_png, __assets_jump_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
-    Image slide_img = LoadImageFromMemory(".png", __assets_slide_png, __assets_slide_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
-    Image wall_slide_img = LoadImageFromMemory(".png", __assets_wall_slide_png, __assets_wall_slide_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
+    Image idle_img = LoadImageFromMemory(".png", __assets_idle_png, __assets_idle_png_len);
+    Image run_img = LoadImageFromMemory(".png", __assets_run_png, __assets_run_png_len);
+    Image jump_img = LoadImageFromMemory(".png", __assets_jump_png, __assets_jump_png_len);
+    Image slide_img = LoadImageFromMemory(".png", __assets_slide_png, __assets_slide_png_len);
+    Image wall_slide_img = LoadImageFromMemory(".png", __assets_wall_slide_png, __assets_wall_slide_png_len);
     Player player = {
         .pos = (Vector2){.x = 100.0f, .y = 30.0f},
         .anim = IDLE,
