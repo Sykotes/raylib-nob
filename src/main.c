@@ -1,5 +1,11 @@
 #include "include/raylib.h"
 
+#include "include/gen/idle.h"
+#include "include/gen/run.h"
+#include "include/gen/jump.h"
+#include "include/gen/slide.h"
+#include "include/gen/wall_slide.h"
+
 #define VIRTUAL_WIDTH 320
 #define VIRTUAL_HEIGHT 240
 #define INITIAL_SCREEN_WIDTH 800
@@ -45,16 +51,22 @@ int main(void) {
 
     RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
+
+    Image idle_img = LoadImageFromMemory(".png", __assets_idle_png, __assets_idle_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
+    Image run_img = LoadImageFromMemory(".png", __assets_run_png, __assets_run_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
+    Image jump_img = LoadImageFromMemory(".png", __assets_jump_png, __assets_jump_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
+    Image slide_img = LoadImageFromMemory(".png", __assets_slide_png, __assets_slide_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
+    Image wall_slide_img = LoadImageFromMemory(".png", __assets_wall_slide_png, __assets_wall_slide_png_len);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
     Player player = {
         .pos = (Vector2){.x = 100.0f, .y = 30.0f},
         .anim = IDLE,
         .anim_frame = 0,
         .anim_timer = 0.0f,
-        .idle_tex = LoadTexture("assets/idle.png"),
-        .run_tex = LoadTexture("assets/run.png"),
-        .jump_tex = LoadTexture("assets/jump.png"),
-        .slide_tex = LoadTexture("assets/slide.png"),
-        .wall_slide_tex = LoadTexture("assets/wall_slide.png"),
+        .idle_tex = LoadTextureFromImage(idle_img),
+        .run_tex = LoadTextureFromImage(run_img),
+        .jump_tex = LoadTextureFromImage(jump_img),
+        .slide_tex = LoadTextureFromImage(slide_img),
+        .wall_slide_tex = LoadTextureFromImage(wall_slide_img),
     };
 
     while (!WindowShouldClose()) {
