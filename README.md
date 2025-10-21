@@ -28,7 +28,9 @@ compile options:
 ./nob -r -web
 ```
 
+requirements:
+xxd (packaged with vim on most platforms): used for generating header files for embedding textures
 
-non native platform requirements:
+non-native linux platforms:
 - for web: python3, [emcscripten](https://emscripten.org/docs/getting_started/downloads.html)
 - for windows cross-compilation: x86_64-w64-mingw32, wine (optional for running)
